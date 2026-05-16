@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import logoImage from "./assets/meomum-logo.png";
 import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps";
@@ -1071,13 +1071,44 @@ function RadarChart({ scores, isEnglish = false }) {
 function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
   const isSenior = mode === "senior";
   const displayName = getRegionDisplayName(region, isEnglish);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") onClose();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
   return (
-    <div className="modal-backdrop">
-      <section className={`detail-modal ${isSenior ? "senior-modal" : ""}`}>
-        <button type="button" className="modal-close" onClick={onClose} aria-label="닫기">×</button>
+    <div
+      className="modal-backdrop"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <section
+        className={`detail-modal ${isSenior ? "senior-modal" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="detail-modal-title"
+      >
+        <button
+          type="button"
+          className="modal-close"
+          onClick={onClose}
+          aria-label={isEnglish ? "Close detail panel" : "상세 패널 닫기"}
+        >
+          ×
+        </button>
         <header className="detail-header">
           <p>{isEnglish ? "Region Detail Panel" : "지역 상세 패널"}</p>
-          <h1>{displayName}</h1>
+          <h1 id="detail-modal-title">{displayName}</h1>
           <span>{isEnglish ? "Selected region" : region.en}</span>
         </header>
         <div className="detail-body">
