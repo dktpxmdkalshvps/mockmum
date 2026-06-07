@@ -5,6 +5,7 @@ import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "re
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css"; // 🚨 이 줄을 꼭 추가해 주세요!
 import { geoCentroid } from "d3-geo"; // 🚨 자동으로 땅 가운데를 찾아주는 도구 추가!
+import { PRESETS as SIM_PRESETS, REGIONS as SIM_REGIONS } from "./data/simData";
 
 const HELP_HERO_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuDGzN9jxwD0VvfAWl47Z7mDWFASDKBptm0hNNxZSayvGZ5_Kuhdoe8XLA9af-Jk8v1fsOm-kILtg1Bs5wIeZoPZemMbbCV3BQXaKacQb92bm0Ys28I6kJT958mEBDTI0IJqx4_U-aMyNoMlH1yOgqcvCvK3LrFa92SeAOLMMjX6VM0t0KpIo4r7pLFICZL7jXgBC1ba1oeXOsZLh-ImK5I6bhlEaEbI-SyNI7C7LcTR3xXdpx2F5kjSRqcZ-gc9RgUuy86C35phT52P";
 
@@ -22,113 +23,70 @@ const MODES = [
   { key: "senior", ko: "시니어", en: "Senior" },
 ];
 
-const PRESETS = {
-  standard: {
-    ko: "표준 체류형",
-    en: "Standard",
-    icon: "♡",
-    weights: { traffic: 15, culture: 25, convenience: 28, safety: 17, nature: 15 },
-  },
-  tourist: {
-    ko: "해외 관광객",
-    en: "Foreign Tourist",
-    icon: "◌",
-    weights: { traffic: 10, culture: 30, convenience: 25, safety: 18, nature: 17 },
-  },
-  nomad: {
-    ko: "디지털 노마드",
-    en: "Digital Nomad",
-    icon: "♟",
-    weights: { traffic: 18, culture: 22, convenience: 30, safety: 15, nature: 15 },
-  },
-  senior: {
-    ko: "액티브 시니어",
-    en: "Active Senior",
-    icon: "⌖",
-    weights: { traffic: 12, culture: 28, convenience: 25, safety: 15, nature: 20 },
-  },
-  solo: {
-    ko: "나홀로 문화형",
-    en: "Solo Travel",
-    icon: "○",
-    weights: { traffic: 15, culture: 32, convenience: 23, safety: 12, nature: 18 },
-  },
+const PRESETS = SIM_PRESETS;
+const REGIONS = SIM_REGIONS;
+
+// 카테고리 한글 라벨 (인사이트 문장용)
+const CAT_KO_LABEL = {
+  traffic: "교통",
+  culture: "문화·여가·디지털",
+  convenience: "생활편의",
+  safety: "안전",
+  nature: "자연",
 };
 
-const REGIONS = [
-  {
-    id: "gangwon",
-    ko: "강원특별자치도",
-    en: "Gangwon",
-    short: "강원",
-    scores: { traffic: 38, culture: 78, convenience: 40, safety: 27, nature: 95 },
-    reason: "자연·문화·여가·디지털 지표가 높아 현재 조건에 잘 맞습니다.",
-    seniorReason: "자연환경이 좋아 조용히 머물기 좋습니다.",
-  },
-  {
-    id: "gyeonggi",
-    ko: "경기도",
-    en: "Gyeonggi",
-    short: "경기",
-    scores: { traffic: 85, culture: 65, convenience: 82, safety: 80, nature: 48 },
-    reason: "안전·생활편의 지표가 높아 현재 조건에 잘 맞습니다.",
-    seniorReason: "병원과 약국이 가까워 생활하기 편합니다.",
-  },
-  {
-    id: "chungbuk",
-    ko: "충청북도",
-    en: "Chungbuk",
-    short: "충북",
-    scores: { traffic: 58, culture: 55, convenience: 61, safety: 78, nature: 86 },
-    reason: "자연·안전 지표가 높아 현재 조건에 잘 맞습니다.",
-    seniorReason: "안전하고 조용한 체류에 적합합니다.",
-  },
-  {
-    id: "jeonnam",
-    ko: "전라남도",
-    en: "Jeonnam",
-    short: "전남",
-    scores: { traffic: 52, culture: 82, convenience: 58, safety: 74, nature: 88 },
-    reason: "문화·여가·디지털·교통 지표가 현재 조건에 잘 맞습니다.",
-    seniorReason: "여유롭고 자연 친화적인 체류에 좋습니다.",
-  },
-  {
-    id: "gyeongbuk",
-    ko: "경상북도",
-    en: "Gyeongbuk",
-    short: "경북",
-    scores: { traffic: 62, culture: 71, convenience: 73, safety: 79, nature: 80 },
-    reason: "생활편의·안전 지표가 높아 현재 조건에 잘 맞습니다.",
-    seniorReason: "생활 편의와 안전이 균형 잡힌 지역입니다.",
-  },
-  {
-    id: "jeju",
-    ko: "제주특별자치도",
-    en: "Jeju",
-    short: "제주",
-    scores: { traffic: 45, culture: 76, convenience: 64, safety: 72, nature: 96 },
-    reason: "자연환경과 휴양 체류 지표가 뛰어납니다.",
-    seniorReason: "자연을 가까이 느끼며 쉬기 좋은 지역입니다.",
-  },
-  {
-    id: "seoul",
-    ko: "서울특별시",
-    en: "Seoul",
-    short: "서울",
-    scores: { traffic: 96, culture: 94, convenience: 93, safety: 69, nature: 35 },
-    reason: "교통·문화·생활편의 인프라가 강합니다.",
-    seniorReason: "의료와 생활 편의 시설이 많습니다.",
-  },
-  {
-    id: "busan",
-    ko: "부산광역시",
-    en: "Busan",
-    short: "부산",
-    scores: { traffic: 82, culture: 86, convenience: 80, safety: 73, nature: 75 },
-    reason: "도시 인프라와 해양 관광 자원이 균형 잡혀 있습니다.",
-    seniorReason: "도시 편의와 바다 휴식이 함께 있습니다.",
-  },
-];
+// 데이터셋 시도명 → korea.json(지도) 시도명 보정
+const MAP_SIDO_NAME = {
+  강원특별자치도: "강원도",
+  전북특별자치도: "전라북도",
+};
+function toMapSidoName(sido) {
+  return MAP_SIDO_NAME[sido] || sido;
+}
+
+// 현재 가중치 조건에서 지역의 추천 인사이트(핵심 기여 지표 + 추천 이유)를 계산한다.
+// 기여도 = (정규화한 카테고리 가중치) × (지표 가중치) × (0~100 점수)  ← 시뮬레이션 산식과 동일
+function computeInsights(region, weights, isEnglish = false) {
+  const metrics = region?.metrics || [];
+  const total = Object.values(weights).reduce((sum, v) => sum + Number(v), 0) || 1;
+  const wf = Object.fromEntries(
+    Object.entries(weights).map(([k, v]) => [k, Number(v) / total])
+  );
+
+  const scored = metrics
+    .map((m) => ({
+      ...m,
+      contribution: (wf[m.catKey] || 0) * (m.mWeight || 0) * (m.score || 0),
+    }))
+    .filter((m) => m.contribution > 0)
+    .sort((a, b) => b.contribution - a.contribution);
+
+  const contribTotal = scored.reduce((sum, m) => sum + m.contribution, 0) || 1;
+  const top = scored.slice(0, 3).map((m) => ({
+    ...m,
+    name: isEnglish ? m.nameEn : m.nameKo,
+    catLabel: isEnglish ? m.catKey : CAT_KO_LABEL[m.catKey],
+    share: Math.round((m.contribution / contribTotal) * 100),
+  }));
+
+  const displayName = isEnglish ? region.en : (region.displayKo || region.ko);
+  let reason = "";
+  let reasonShort = "";
+  if (top.length) {
+    if (isEnglish) {
+      reason = `${displayName} ranks high under the current weighting thanks to strong ${top
+        .map((m) => `${m.name} (${m.score})`)
+        .join(", ")}.`;
+      reasonShort = `Strong ${top[0].name} and ${top[1] ? top[1].name : top[0].catLabel}.`;
+    } else {
+      reason = `${displayName}은(는) ${top
+        .map((m) => `${m.name} ${m.score}점`)
+        .join(", ")}이 높아 현재 가중치 조건에서 상위로 추천됩니다.`;
+      reasonShort = `${top[0].name}·${top[1] ? top[1].name : top[0].catLabel} 지표가 우수합니다.`;
+    }
+  }
+  return { top, reason, reasonShort, scored };
+}
 
 const INDICATOR_SECTIONS = [
   {
@@ -511,7 +469,7 @@ function getRegionOnlySearchName(region, isEnglish = false) {
 
 
 function getInitialUrlState() {
-  const defaults = { mode: "simple", language: "ko", region: "gangwon" };
+  const defaults = { mode: "simple", language: "ko", region: "" };
   if (typeof window === "undefined") return defaults;
 
   const params = new URLSearchParams(window.location.search);
@@ -532,8 +490,8 @@ function App() {
   const [mode, setMode] = useState(initialUrlState.mode);
   const [language, setLanguage] = useState(initialUrlState.language);
   const [helpTab, setHelpTab] = useState("service");
-  const [selectedPreset, setSelectedPreset] = useState("standard");
-  const [weights, setWeights] = useState(PRESETS.standard.weights);
+  const [selectedPreset, setSelectedPreset] = useState("balanced");
+  const [weights, setWeights] = useState(PRESETS.balanced.weights);
   const [selectedRegionId, setSelectedRegionId] = useState(initialUrlState.region);
   const [detailRegion, setDetailRegion] = useState(null);
   const [toast, setToast] = useState("");
@@ -546,8 +504,18 @@ function App() {
     REGIONS.map((region) => ({
       ...region,
       logoUrl: regionLogoFor(region),
+      regionNameKo: region.displayKo || region.ko,
+      regionNameEn: region.en,
+      parentRegionNameKo: region.parentKo || "",
       finalScore: calcFinalScore(region.scores, weights),
-    })).sort((a, b) => b.finalScore - a.finalScore).slice(0, 5)
+    }))
+      .sort((a, b) => b.finalScore - a.finalScore)
+      .slice(0, 5)
+      .map((region) => ({
+        ...region,
+        insightsKo: computeInsights(region, weights, false),
+        insightsEn: computeInsights(region, weights, true),
+      }))
   ), [weights]);
 
   const selectedRegion = rankings.find((region) => region.id === selectedRegionId) || rankings[0];
@@ -566,7 +534,7 @@ function App() {
   }
 
   function resetWeights() {
-    applyPreset("standard");
+    applyPreset("balanced");
   }
 
   function handleModeChange(nextMode) {
@@ -806,27 +774,21 @@ function App() {
 
                   return (
                     <>
-                      {/* 🗺️ 1. 땅(지역) 싹 그리기 */}
+                      {/* 🗺️ 1. 시도 색칠: 해당 시도에 속한 Top5 지역 중 최상위 순위 색을 칠한다 */}
                       {geographies.map((geo) => {
-                        const mapName = (geo?.properties?.name || "").replace(/\s+/g, ''); // 예: "부천시원미구", "종로구"
+                        const mapName = (geo?.properties?.name || "").replace(/\s+/g, "");
 
-                        const rankIndex = rankings.findIndex(r => {
-                          const rKo = (r.ko || "").replace(/\s+/g, ''); // 예: "경기도부천시"
-                          const rShort = (r.short || "").replace(/\s+/g, '');
-
-                          // 🚨 핵심 로직: "경기도 부천시"에서 마지막 단어인 "부천시"만 추출!
-                          const parts = (r.ko || "").trim().split(/\s+/);
-                          const coreName = parts[parts.length - 1]; // "부천시", "종로구" 등
-
-                          return mapName === rKo || mapName === rShort ||
-                            mapName.includes(coreName) || // "부천시원미구"가 "부천시"를 포함하면 합격!
-                            rKo.includes(mapName);        // "서울특별시종로구"가 "종로구"를 포함하면 합격!
+                        let bestRank = -1;
+                        rankings.forEach((r, idx) => {
+                          if (toMapSidoName(r.sido).replace(/\s+/g, "") === mapName) {
+                            if (bestRank === -1 || idx < bestRank) bestRank = idx;
+                          }
                         });
 
-                        const isTop5 = rankIndex !== -1 && rankIndex < 5;
+                        const isTop5 = bestRank !== -1 && bestRank < 5;
                         const rankColors = ["#2d4a22", "#4b7a3a", "#6ab354", "#97b986", "#c3d6b8"];
-                        const fillColor = isTop5 ? rankColors[rankIndex] : "#e2e8f0";
-                        const strokeColor = isTop5 ? fillColor : "#ffffff"; // 구 경계선 숨기기
+                        const fillColor = isTop5 ? rankColors[bestRank] : "#e2e8f0";
+                        const strokeColor = isTop5 ? fillColor : "#ffffff";
 
                         return (
                           <Geography
@@ -840,71 +802,75 @@ function App() {
                               hover: { fill: "#db9ebb", cursor: "pointer", outline: "none" },
                               pressed: { outline: "none" }
                             }}
-                            onMouseEnter={() => setTooltipContent(isTop5 ? `${getRegionDisplayName(rankings[rankIndex], false)}: 🏆 ${rankIndex + 1}위` : (geo?.properties?.name || ""))}
+                            onMouseEnter={() => setTooltipContent(isTop5 ? `${getRegionDisplayName(rankings[bestRank], isEnglish)}: 🏆 ${bestRank + 1}${isEnglish ? "" : "위"}` : (geo?.properties?.name || ""))}
                             onMouseLeave={() => setTooltipContent("")}
-                            onClick={() => { if (isTop5) setSelectedRegionId(rankings[rankIndex].id); }}
+                            onClick={() => { if (isTop5) setSelectedRegionId(rankings[bestRank].id); }}
                             data-tooltip-id="map-tooltip"
                             data-tooltip-content={tooltipContent}
                           />
                         );
                       })}
 
-                      {/* 📍 2. Top 5 마커 꽂기 */}
-                      {rankings.slice(0, 5).map((rankedRegion, rankIndex) => {
-                        const rKo = (rankedRegion.ko || "").replace(/\s+/g, '');
-                        const rShort = (rankedRegion.short || "").replace(/\s+/g, '');
-                        const parts = (rankedRegion.ko || "").trim().split(/\s+/);
-                        const coreName = parts[parts.length - 1];
-
-                        const matchingGeos = geographies.filter(geo => {
-                          const mapName = (geo?.properties?.name || "").replace(/\s+/g, '');
-                          return mapName === rKo || mapName === rShort ||
-                            mapName.includes(coreName) ||
-                            rKo.includes(mapName);
+                      {/* 📍 2. Top 5 마커: 시군구 좌표가 있으면 정확히, 없으면 시도 중심에 표시 */}
+                      {(() => {
+                        // 시도 중심점 사전 계산 + 같은 시도에 마커가 겹치면 살짝 분산
+                        const sidoCentroid = {};
+                        geographies.forEach((geo) => {
+                          const nm = (geo?.properties?.name || "").replace(/\s+/g, "");
+                          sidoCentroid[nm] = geoCentroid(geo);
                         });
+                        const sidoSeen = {};
+                        return rankings.slice(0, 5).map((rankedRegion, rankIndex) => {
+                          let coords = rankedRegion.coord;
+                          if (!coords) {
+                            const nm = toMapSidoName(rankedRegion.sido).replace(/\s+/g, "");
+                            const base = sidoCentroid[nm];
+                            if (!base) return null;
+                            const seen = sidoSeen[nm] || 0;
+                            sidoSeen[nm] = seen + 1;
+                            const ang = (seen * 2.39996);
+                            coords = [base[0] + Math.cos(ang) * 0.18 * seen, base[1] + Math.sin(ang) * 0.18 * seen];
+                          }
+                          const isFirst = rankIndex === 0;
+                          const label = `${getRegionDisplayName(rankedRegion, isEnglish)}: 🏆 ${rankIndex + 1}${isEnglish ? "" : "위"}`;
 
-                        if (matchingGeos.length === 0) return null;
-
-                        // 여러 개의 '구'가 합쳐져 있어도 마커는 무조건 1개만 꽂습니다.
-                        const centroid = geoCentroid(matchingGeos[0]);
-                        const isFirst = rankIndex === 0;
-
-                        return (
-                          <Marker
-                            key={`marker-rank-${rankedRegion.id}`}
-                            coordinates={centroid}
-                            onMouseEnter={() => setTooltipContent(`${getRegionDisplayName(rankedRegion, false)}: 🏆 ${rankIndex + 1}위`)}
-                            onMouseLeave={() => setTooltipContent("")}
-                            onClick={() => setSelectedRegionId(rankedRegion.id)}
-                            data-tooltip-id="map-tooltip"
-                            data-tooltip-content={tooltipContent}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <g
-                              transform="translate(-12, -24)"
-                              style={{ transition: "all 0.2s ease-in-out" }}
-                              onMouseEnter={(e) => e.currentTarget.style.transform = "translate(-12px, -30px) scale(1.15)"}
-                              onMouseLeave={(e) => e.currentTarget.style.transform = "translate(-12px, -24px) scale(1)"}
+                          return (
+                            <Marker
+                              key={`marker-rank-${rankedRegion.id}`}
+                              coordinates={coords}
+                              onMouseEnter={() => setTooltipContent(label)}
+                              onMouseLeave={() => setTooltipContent("")}
+                              onClick={() => setSelectedRegionId(rankedRegion.id)}
+                              data-tooltip-id="map-tooltip"
+                              data-tooltip-content={tooltipContent}
+                              style={{ cursor: "pointer" }}
                             >
-                              <path
-                                d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 4.5 12 4.5 15.5 6.07 15.5 8 13.93 11.5 12 11.5z"
-                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
-                              />
-                              <text
-                                y="-5"
-                                x="12"
-                                textAnchor="middle"
-                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
-                                fontSize="14px"
-                                fontWeight="bold"
-                                style={{ textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff" }}
+                              <g
+                                transform="translate(-12, -24)"
+                                style={{ transition: "all 0.2s ease-in-out" }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = "translate(-12px, -30px) scale(1.15)"}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = "translate(-12px, -24px) scale(1)"}
                               >
-                                {rankIndex + 1}위
-                              </text>
-                            </g>
-                          </Marker>
-                        );
-                      })}
+                                <path
+                                  d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 4.5 12 4.5 15.5 6.07 15.5 8 13.93 11.5 12 11.5z"
+                                  fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                                />
+                                <text
+                                  y="-5"
+                                  x="12"
+                                  textAnchor="middle"
+                                  fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                                  fontSize="14px"
+                                  fontWeight="bold"
+                                  style={{ textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff" }}
+                                >
+                                  {rankIndex + 1}{isEnglish ? "" : "위"}
+                                </text>
+                              </g>
+                            </Marker>
+                          );
+                        });
+                      })()}
                     </>
                   );
                 }}
@@ -988,7 +954,7 @@ function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDet
         <div className="result-text">
           <h3>{displayName}</h3>
           {shouldShowParentSub && <p className="region-sub">{parentName}</p>}
-          <p>{isEnglish ? "This region matches your current preferences." : isSenior ? region.seniorReason : region.reason}</p>
+          <p>{(isEnglish ? region.insightsEn : region.insightsKo)?.reasonShort || (isEnglish ? "Matches your current weighting." : "현재 가중치 조건에 잘 맞는 지역입니다.")}</p>
         </div>
       </div>
       <div className="result-bottom">
@@ -1071,6 +1037,10 @@ function RadarChart({ scores, isEnglish = false }) {
 function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
   const isSenior = mode === "senior";
   const displayName = getRegionDisplayName(region, isEnglish);
+  const insight = (isEnglish ? region.insightsEn : region.insightsKo)
+    || computeInsights(region, PRESETS.balanced.weights, isEnglish);
+  const topMetrics = insight.scored || [];
+  const rankColors = ["#2d4a22", "#4b7a3a", "#6ab354"];
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -1126,9 +1096,9 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
               )}
             </div>
             <div className="detail-description">
-              {region.reasons?.[0] || (isEnglish
-                ? "High contribution from daily convenience and culture, leisure, and digital indicators makes this area suitable for long-stay tourism."
-                : "생활편의와 문화·여가·디지털 지표 기여도가 높아 장기체류 관광에 적합합니다.")}
+              {insight.reason || (isEnglish
+                ? "This area suits long-stay travel under the current weighting."
+                : "현재 가중치 조건에서 장기체류에 적합한 지역입니다.")}
             </div>
             <button type="button" className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
           </aside>
@@ -1145,12 +1115,43 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
               <div className="radar-title"><span>◷</span><h3>{isEnglish ? "5 Category Radar Chart" : "5대 카테고리 방사형 차트"}</h3></div>
               <RadarChart scores={region.scores} isEnglish={isEnglish} />
             </div>
+
+            {/* ⭐ 추천 인사이트: 이 장소를 추천하는 핵심 지표 3개 */}
+            <div className="insight-panel">
+              <div className="insight-title">
+                <span>★</span>
+                <h3>{isEnglish ? "Why this place — key indicators" : "이 장소를 추천하는 이유 — 핵심 지표"}</h3>
+              </div>
+              <p className="insight-reason">{insight.reason}</p>
+              <div className="insight-cards">
+                {insight.top.map((m, i) => (
+                  <div className="insight-card" key={m.id} style={{ borderTopColor: rankColors[i] || "#6ab354" }}>
+                    <div className="insight-rank" style={{ color: rankColors[i] || "#6ab354" }}>{i + 1}</div>
+                    <div className="insight-meta">
+                      <strong>{m.name}</strong>
+                      <small>{m.catLabel}</small>
+                    </div>
+                    <div className="insight-figures">
+                      <span className="insight-score">{m.score}<small>{isEnglish ? " pts" : "점"}</small></span>
+                      <span className="insight-share">{isEnglish ? "weighted contribution" : "가중 기여도"} {m.contribution.toFixed(1)} · {m.share}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {mode === "detail" && (
               <table className="detail-table">
-                <thead><tr>{(isEnglish ? ["Indicator", "Raw value", "Unit", "Relative score", "Source"] : ["지표명", "실제값", "단위", "상대점수", "출처"]).map((header) => <th key={header}>{header}</th>)}</tr></thead>
+                <thead><tr>{(isEnglish ? ["Indicator", "Category", "Score (0-100)", "Weighted", "Source"] : ["지표명", "카테고리", "상대점수(0~100)", "가중 기여도", "출처"]).map((header) => <th key={header}>{header}</th>)}</tr></thead>
                 <tbody>
-                  {(region.raw?.length ? region.raw.slice(0, 5).map((metric) => [metric.metric_name_ko || metric.metricNameKo || metric.name || "지표", metric.raw_value ?? metric.rawValue ?? "-", metric.unit || "-", metric.score_100 ?? metric.score100 ?? "-", metric.source || "-"]) : (isEnglish ? Object.values(INDICATOR_EN_SECTIONS).flatMap((section) => section.rows) : INDICATOR_SECTIONS.flatMap((section) => section.rows)).slice(0, 5)).map((row, index) => (
-                    <tr key={`${row[0]}-${index}`}><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td></tr>
+                  {topMetrics.slice(0, 8).map((m, index) => (
+                    <tr key={`${m.id}-${index}`}>
+                      <td>{isEnglish ? m.nameEn : m.nameKo}</td>
+                      <td>{isEnglish ? m.catKey : CAT_KO_LABEL[m.catKey]}</td>
+                      <td>{m.score}</td>
+                      <td>{m.contribution.toFixed(2)}</td>
+                      <td className="src-cell">{m.source || "-"}</td>
+                    </tr>
                   ))}
                 </tbody>
               </table>

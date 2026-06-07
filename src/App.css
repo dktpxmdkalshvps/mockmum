@@ -2328,3 +2328,43 @@ button { font: inherit; cursor: pointer; }
     font-size: 14px !important;
   }
 }
+
+/* ===== 추천 인사이트 패널 (DetailModal) ===== */
+.insight-panel {
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f3f8f0 0%, #fbfdfa 100%);
+  border: 1px solid #dce8d4;
+}
+.insight-title { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.insight-title span { color: #6ab354; font-size: 18px; }
+.insight-title h3 { margin: 0; font-size: 15px; font-weight: 700; color: #2d4a22; }
+.insight-reason {
+  margin: 0 0 16px; font-size: 13.5px; line-height: 1.6; color: #3f513a;
+}
+.insight-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.insight-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e7efe1;
+  border-top: 3px solid #6ab354;
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(45, 74, 34, 0.05);
+}
+.insight-rank { font-size: 20px; font-weight: 800; line-height: 1; }
+.insight-meta { display: flex; flex-direction: column; gap: 2px; }
+.insight-meta strong { font-size: 13.5px; color: #21331b; }
+.insight-meta small { font-size: 11px; color: #7c8b75; }
+.insight-figures { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
+.insight-score { font-size: 18px; font-weight: 700; color: #2d4a22; }
+.insight-score small { font-size: 11px; font-weight: 500; color: #7c8b75; }
+.insight-share { font-size: 10.5px; color: #97a890; }
+.detail-table .src-cell { font-size: 10.5px; color: #8a978; max-width: 220px; }
+@media (max-width: 720px) {
+  .insight-cards { grid-template-columns: 1fr; }
+}
